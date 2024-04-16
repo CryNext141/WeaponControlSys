@@ -484,16 +484,16 @@ namespace WeaponConrolsSys
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT UserID, First_name, Last_name, AgencyID, AgencyName, AccessLevelID FROM Users", connection))
+                using (SqlCommand command = new SqlCommand("SELECT UserID, First_name, Last_name, AgencyID, AgencyName, AccessLevelID, RegistrationDate FROM Users", connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-30} {5,-15}", "UserID", "First Name", "Last Name", "AgencyID", "Agency name", "AccessLevelID");
-                        Console.WriteLine(new string('-', 95));
+                        Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-15} {5,-20} {6,-20}", "UserID", "First Name", "Last Name", "AgencyID", "Agency name", "AccessLevelID", "RegistrationDate");
+                        Console.WriteLine(new string('-', 115));
 
                         while (reader.Read())
                         {
-                            Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-30} {5,-15}", reader["UserID"], reader["First_name"], reader["Last_name"], reader["AgencyID"], reader["AgencyName"], reader["AccessLevelID"]);
+                            Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-20} {5,-15} {6,-20}", reader["UserID"], reader["First_name"], reader["Last_name"], reader["AgencyID"], reader["AgencyName"], reader["AccessLevelID"], reader["RegistrationDate"]);
                         }
                     }
                 }

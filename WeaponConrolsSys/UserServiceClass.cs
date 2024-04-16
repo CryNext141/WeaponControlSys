@@ -22,7 +22,7 @@ namespace WeaponConrolsSys
                     agencyName = (string)getAgencyNameCommand.ExecuteScalar();
                 }
 
-                string query = "INSERT INTO Users (Username, Password, First_name, Last_name, AgencyID, AgencyName, AccessLevelID) VALUES (@Username, @Password, @First_name, @Last_name, @AgencyID, @AgencyName, @AccessLevelID)";
+                string query = "INSERT INTO Users (Username, Password, First_name, Last_name, AgencyID, AgencyName, AccessLevelID, RegistrationDate) VALUES (@Username, @Password, @First_name, @Last_name, @AgencyID, @AgencyName, @AccessLevelID, GETDATE())";
 
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -38,6 +38,7 @@ namespace WeaponConrolsSys
                 }
             }
         }
+
 
         public bool LoginUser(string username, string password)
         {
