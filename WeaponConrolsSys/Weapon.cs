@@ -1,5 +1,6 @@
-﻿using System.Data.SqlClient;
-using WeaponConrolsSys;
+﻿using Dapper;
+using System.Data.SqlClient;
+using WeaponControlsSys;
 
 public class Weapon
 {
@@ -10,21 +11,17 @@ public class Weapon
     public string? Caliber { get; set; }
 
 
-    public static void AddWeapon(Weapon weapon)
+    public static int AddWeapon(Weapon weapon)
     {
         using (SqlConnection connection = DbConnector.GetConnection())
         {
             connection.Open();
 
-            using (SqlCommand command = new SqlCommand())
-            {
-                command.Connection = connection;
-                command.CommandText = "INSERT INTO GeneralWeapons (WeaponName, Caliber) VALUES (@WeaponName, @Caliber); SELECT SCOPE_IDENTITY();";
-                command.Parameters.AddWithValue("@WeaponName", weapon.WeaponName);
-                command.Parameters.AddWithValue("@Caliber", weapon.Caliber);
+            string query = "INSERT INTO GeneralWeapons (WeaponName, Caliber) VALUES (@WeaponName, @Caliber); SELECT CAST(SCOPE_IDENTITY() AS INT);";
 
-                command.ExecuteScalar();
-            }
+            int weaponID = connection.QueryFirstOrDefault<int>(query, weapon);
+
+            return weaponID;
         }
     }
 
@@ -36,38 +33,18 @@ public class Weapon
 
             using (SqlTransaction transaction = connection.BeginTransaction())
             {
-                string getTablesQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'Weapons_Agency%'";
 
-                List<string> tables = new List<string>();
-                using (SqlCommand command = new SqlCommand(getTablesQuery, connection, transaction))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            tables.Add(reader.GetString(0));
-                        }
-                    }
-                }
+                string getTablesQuery = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'Weapons_Agency%'";
+                IEnumerable<string> tables = connection.Query<string>(getTablesQuery, transaction: transaction);
 
                 foreach (string tableName in tables)
                 {
                     string deleteWeaponAgencyQuery = $"DELETE FROM {tableName} WHERE WeaponName IN (SELECT WeaponName FROM GeneralWeapons WHERE WeaponID = @WeaponID)";
-
-                    using (SqlCommand deleteCommand = new SqlCommand(deleteWeaponAgencyQuery, connection, transaction))
-                    {
-                        deleteCommand.Parameters.AddWithValue("@WeaponID", weaponId);
-                        deleteCommand.ExecuteNonQuery();
-                    }
+                    connection.Execute(deleteWeaponAgencyQuery, new { WeaponID = weaponId }, transaction: transaction);
                 }
 
                 string deleteGeneralWeaponQuery = "DELETE FROM GeneralWeapons WHERE WeaponID = @WeaponID";
-
-                using (SqlCommand command = new SqlCommand(deleteGeneralWeaponQuery, connection, transaction))
-                {
-                    command.Parameters.AddWithValue("@WeaponID", weaponId);
-                    command.ExecuteNonQuery();
-                }
+                connection.Execute(deleteGeneralWeaponQuery, new { WeaponID = weaponId }, transaction: transaction);
 
                 transaction.Commit();
             }

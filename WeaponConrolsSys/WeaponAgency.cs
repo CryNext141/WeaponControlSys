@@ -1,5 +1,6 @@
-﻿using System.Data.SqlClient;
-using WeaponConrolsSys;
+﻿using Dapper;
+using System.Data.SqlClient;
+using WeaponControlsSys;
 public class Weapon_Agency
 {
     static DbController DbConnector = new DbController();
@@ -15,33 +16,23 @@ public class Weapon_Agency
         {
             connection.Open();
 
-            using (SqlCommand command = new SqlCommand())
-            {
-                command.Connection = connection;
-                command.CommandText = $"INSERT INTO Weapons_Agency{agencyName} (WeaponName, AmmunitionAmount, AgencyID) VALUES (@WeaponName, @AmmunitionAmount, @AgencyID)";
-                command.Parameters.AddWithValue("@WeaponName", weaponAgency.WeaponName);
-                command.Parameters.AddWithValue("@AmmunitionAmount", weaponAgency.AmmunitionAmount);
-                command.Parameters.AddWithValue("@AgencyID", weaponAgency.AgencyID);
+            string tableName = $"Weapons_Agency{agencyName}";
+            string query = $"INSERT INTO {tableName} (WeaponName, AmmunitionAmount, AgencyID) VALUES (@WeaponName, @AmmunitionAmount, @AgencyID)";
 
-                command.ExecuteNonQuery();
-            }
+            connection.Execute(query, new { WeaponName = weaponAgency.WeaponName, AmmunitionAmount = weaponAgency.AmmunitionAmount, AgencyID = weaponAgency.AgencyID });
         }
     }
 
     public static void DeleteWeaponFromAgency(string agencyName, string weaponName, int agencyId)
     {
-        string tableName = "Weapons_Agency" + agencyName;
-        string query = $"DELETE FROM {tableName} WHERE WeaponName = @weaponName AND AgencyID = @agencyId";
+        string tableName = $"Weapons_Agency{agencyName}";
+        string query = $"DELETE FROM {tableName} WHERE WeaponName = @WeaponName AND AgencyID = @AgencyID";
 
         using (SqlConnection connection = DbConnector.GetConnection())
         {
             connection.Open();
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@weaponName", weaponName);
-                command.Parameters.AddWithValue("@agencyId", agencyId);
-                command.ExecuteNonQuery();
-            }
+
+            connection.Execute(query, new { WeaponName = weaponName, AgencyID = agencyId });
         }
     }
 }

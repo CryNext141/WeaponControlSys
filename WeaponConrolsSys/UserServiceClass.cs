@@ -1,6 +1,7 @@
-﻿using System.Data.SqlClient;
+﻿using Dapper;
+using System.Data.SqlClient;
 
-namespace WeaponConrolsSys
+namespace WeaponControlsSys
 {
     public class UserService
     {
@@ -14,27 +15,38 @@ namespace WeaponConrolsSys
                 connection.Open();
 
                 string getAgencyNameQuery = "SELECT AgencyName FROM LawEnforcementAgencies WHERE AgencyID = @AgencyID";
-                string agencyName;
+                string? agencyName;
 
                 using (SqlCommand getAgencyNameCommand = new SqlCommand(getAgencyNameQuery, connection))
                 {
                     getAgencyNameCommand.Parameters.AddWithValue("@AgencyID", agencyID);
-                    agencyName = (string)getAgencyNameCommand.ExecuteScalar();
+                    agencyName = getAgencyNameCommand.ExecuteScalar() as string;
                 }
 
-                string query = "INSERT INTO Users (Username, Password, First_name, Last_name, AgencyID, AgencyName, AccessLevelID, RegistrationDate) VALUES (@Username, @Password, @First_name, @Last_name, @AgencyID, @AgencyName, @AccessLevelID, GETDATE())";
-
-                using (SqlCommand command = new SqlCommand(query, connection))
+                if (string.IsNullOrEmpty(agencyName))
                 {
-                    command.Parameters.AddWithValue("@Username", username);
-                    command.Parameters.AddWithValue("@Password", hashedPassword);
-                    command.Parameters.AddWithValue("@First_name", first_name);
-                    command.Parameters.AddWithValue("@Last_name", last_name);
-                    command.Parameters.AddWithValue("@AgencyID", agencyID);
-                    command.Parameters.AddWithValue("@AgencyName", agencyName);
-                    command.Parameters.AddWithValue("@AccessLevelID", accessLevelID);
+                    Console.WriteLine("Agency not found.");
+                    return;
+                }
 
-                    command.ExecuteNonQuery();
+                using (SqlTransaction transaction = connection.BeginTransaction())
+                {
+
+                    string query = "INSERT INTO Users (Username, Password, First_name, Last_name, AgencyID, AgencyName, AccessLevelID, RegistrationDate) " +
+                                   "VALUES (@Username, @Password, @First_name, @Last_name, @AgencyID, @AgencyName, @AccessLevelID, GETDATE())";
+
+                    connection.Execute(query, new
+                    {
+                        Username = username,
+                        Password = hashedPassword,
+                        First_name = first_name,
+                        Last_name = last_name,
+                        AgencyID = agencyID,
+                        AgencyName = agencyName,
+                        AccessLevelID = accessLevelID
+                    }, transaction: transaction);
+
+                    transaction.Commit();
                 }
             }
         }
@@ -54,38 +66,13 @@ namespace WeaponConrolsSys
 
         public User GetUserFromDatabase(string username)
         {
-            User? user = null;
-
             using (SqlConnection connection = DbConnector.GetConnection())
             {
                 connection.Open();
 
                 string query = "SELECT * FROM Users WHERE Username = @Username";
-
-                using (SqlCommand command = new SqlCommand(query, connection))
-                {
-                    command.Parameters.AddWithValue("@Username", username);
-
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            user = new User
-                            {
-                                UserID = Convert.ToInt32(reader["UserID"]),
-                                Username = reader["Username"].ToString(),
-                                Password = reader["Password"].ToString(),
-                                First_name = reader["First_name"].ToString(),
-                                Last_name = reader["Last_name"].ToString(),
-                                AgencyID = Convert.ToInt32(reader["AgencyID"]),
-                                AgencyName = reader["AgencyName"].ToString(),
-                                AccessLevelID = Convert.ToInt32(reader["AccessLevelID"])
-                            };
-                        }
-                    }
-                }
+                return connection.QueryFirstOrDefault<User>(query, new { Username = username });
             }
-            return user;
         }
     }
 }

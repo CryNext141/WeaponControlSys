@@ -1,13 +1,14 @@
-﻿using System.Data.SqlClient;
+﻿using Dapper;
+using System.Data.SqlClient;
 
-namespace WeaponConrolsSys
+
+namespace WeaponControlsSys
 {
     internal class rnboUserClass
     {
         static DbController DbConnector = new DbController();
 
-        static string? choose;
-        static string? subChoose;
+        static string? choose, subChoose;
 
         static User user = new User();
         static UserService userService = new UserService();
@@ -17,16 +18,20 @@ namespace WeaponConrolsSys
             user = userService.GetUserFromDatabase(Program.loginUsername);
 
             Console.Clear();
-            Console.WriteLine($@"
-                Welcome, {user.First_name + " " + user.Last_name}! From {user.AgencyName.ToUpper()} with access level {user.AccessLevelID}
+            Console.Write("     Welcome, ");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write(user.First_name + " " + user.Last_name);
+            Console.ResetColor();
+            Console.WriteLine($"! From {user.AgencyName.ToUpper()} with access level {user.AccessLevelID}");
 
-            ========================================
-                You have the following options:
-                1. Law enforcement organizations:
-                2. Officers
-                3. Weapons
-                0. Exit
-            ========================================");
+            Console.WriteLine(@"
+        ========================================
+            You have the following options:
+            1. Law enforcement organizations:
+            2. Officers
+            3. Weapons
+            0. Exit
+        ========================================");
 
             bool validChoice;
             do
@@ -38,130 +43,13 @@ namespace WeaponConrolsSys
                 switch (choose)
                 {
                     case "1":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View a list of all law enforcement agencies.
-                2. Create a new law enforcement agency
-                3. Disband a law enforcement agency
-                4. Return to main menu");
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewLawEnforcementList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            Console.Clear();
-                            AddLawEnforcementAgency();
-                        }
-                        else if (subChoose == "3")
-                        {
-                            Console.Clear();
-                            DeleteAgencyAndUsers();
-                        }
-
-                        else if (subChoose == "4")
-                        {
-                            ReturnToMainMenu();
-                        }
-
+                        HandleLawEnforcementMenu();
                         break;
                     case "2":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View the list of all officers.
-                2. Add a new officer to the system
-                3. Delete an officer from the system
-                4. Update information about officers
-                5. Return to main menu");
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewOfficersList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            Console.Clear();
-                            AddNewUser();
-                        }
-                        else if (subChoose == "3")
-                        {
-                            Console.Clear();
-                            DeleteUser();
-                        }
-                        else if (subChoose == "4")
-                        {
-                            Console.Clear();
-                           UserUpdateData();
-                        }
-                        else if (subChoose == "5")
-                        {
-                            ReturnToMainMenu();
-                        }
+                        HandleOfficersMenu();
                         break;
                     case "3":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View the list of all weapons(several options)
-                2. Adopt a new weapon into service
-                3. Remove a weapon from service
-                4. Add a new type of weapon for a law enforcement agency
-                5. Remove a certain type of weapon from a law enforcement agency
-                6. Restore ammunition to a certain security agency
-                7. View the number of ammo in a warehouse
-                8. Return to main menu");
-
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewWeponsList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            Console.Clear();
-                            UserAddWeapon();
-                        }
-                        else if (subChoose == "3")
-                        {
-                            Console.Clear();
-                            UserDeleteWeapon();
-                        }
-
-                        else if (subChoose == "4")
-                        {
-                            Console.Clear();
-                            UserAddWeaponToAgency();
-                        }
-                        else if (subChoose == "5")
-                        {
-                            Console.Clear();
-                            UserDeleteWeaponFromAgency();
-                        }
-                        else if (subChoose == "6")
-                        {
-                            Console.Clear();
-                            UserAddAmmunition();
-                        }
-                        else if (subChoose == "7")
-                        {
-                            Console.Clear();
-                            ViewAmmoNumberInStorage();
-                        }
-
-                        else if (subChoose == "8")
-                        {
-                            ReturnToMainMenu();
-                        }
-
+                        HandleWeaponsMenu();
                         break;
                     case "0":
                         Console.Clear();
@@ -172,6 +60,136 @@ namespace WeaponConrolsSys
                         break;
                 }
             } while (!validChoice);
+
+            void HandleLawEnforcementMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+            1. View a list of all law enforcement agencies.
+            2. Create a new law enforcement agency
+            3. Disband a law enforcement agency
+            4. Return to main menu");
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewLawEnforcementList();
+
+                        break;
+                    case "2":
+                        Console.Clear();
+                        AddLawEnforcementAgency();
+                        break;
+                    case "3":
+                        Console.Clear();
+                        DeleteAgencyAndUsers();
+                        break;
+                    case "4":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
+
+            void HandleOfficersMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+            1. View the list of all officers.
+            2. Add a new officer to the system
+            3. Delete an officer from the system
+            4. Update information about officers
+            5. Return to main menu");
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewOfficersList();
+                        break;
+                    case "2":
+                        Console.Clear();
+                        AddNewUser();
+                        break;
+                    case "3":
+                        Console.Clear();
+                        DeleteUser();
+                        break;
+                    case "4":
+                        Console.Clear();
+                        UserUpdateData();
+                        break;
+                    case "5":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
+
+            void HandleWeaponsMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+            1. View the list of all weapons(several options)
+            2. Adopt a new weapon into service
+            3. Remove a weapon from service
+            4. Add a new type of weapon for a law enforcement agency
+            5. Remove a certain type of weapon from a law enforcement agency
+            6. Restore ammunition to a certain security agency
+            7. View the number of ammo in a warehouse
+            8. Return to main menu");
+
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewWeaponsList();
+
+                        break;
+                    case "2":
+                        Console.Clear();
+                        UserAddWeapon();
+                        break;
+                    case "3":
+                        Console.Clear();
+                        UserDeleteWeapon();
+                        break;
+                    case "4":
+                        Console.Clear();
+                        UserAddWeaponToAgency();
+                        break;
+                    case "5":
+                        Console.Clear();
+                        UserDeleteWeaponFromAgency();
+                        break;
+                    case "6":
+                        Console.Clear();
+                        UserAddAmmunition();
+                        break;
+                    case "7":
+                        Console.Clear();
+                        ViewAmmoNumberInStorage();
+                        break;
+                    case "8":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
         }
 
         public static void FirstLevelAccses()
@@ -189,7 +207,6 @@ namespace WeaponConrolsSys
                 3. Weapons
                 0. Exit
             ========================================");
-
             bool validChoice;
             do
             {
@@ -200,86 +217,13 @@ namespace WeaponConrolsSys
                 switch (choose)
                 {
                     case "1":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View a list of all law enforcement agencies.
-                2. Return to main menu");
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewLawEnforcementList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            ReturnToMainMenu();
-                        }
-
+                        HandleLawEnforcementSubMenu();
                         break;
                     case "2":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View the list of all officers.
-                2. Add a new officer to the system
-                3. Delete an officer from the system
-                4. Return to main menu");
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewOfficersList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            Console.Clear();
-                            AddNewUser();
-                        }
-                        else if (subChoose == "3")
-                        {
-                            Console.Clear();
-                            DeleteUser();
-                        }
-                        else if (subChoose == "4")
-                        {
-                            ReturnToMainMenu();
-                        }
+                        HandleOfficersSubMenu();
                         break;
                     case "3":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View the list of all weapons(several options)
-                2. Adopt a new weapon into service
-                3. Remove a weapon from service
-                4. View the number of ammo in a warehouse
-                5. Return to main menu");
-
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewWeponsList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            Console.Clear();
-                            UserAddWeapon();
-                        }
-                        else if (subChoose == "4")
-                        {
-                            Console.Clear();
-                            ViewAmmoNumberInStorage();
-                        }
-                        else if (subChoose == "5")
-                        {
-                            ReturnToMainMenu();
-                        }
-
+                        HandleWeaponsSubMenu();
                         break;
                     case "0":
                         Console.Clear();
@@ -290,9 +234,105 @@ namespace WeaponConrolsSys
                         break;
                 }
             } while (!validChoice);
+
+            void HandleLawEnforcementSubMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+            1. View a list of all law enforcement agencies.
+            2. Return to main menu");
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewLawEnforcementList();
+                        break;
+                    case "2":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
+
+            void HandleOfficersSubMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+            1. View the list of all officers.
+            2. Add a new officer to the system
+            3. Delete an officer from the system
+            4. Return to main menu");
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewOfficersList();
+                        break;
+                    case "2":
+                        Console.Clear();
+                        AddNewUser();
+                        break;
+                    case "3":
+                        Console.Clear();
+                        DeleteUser();
+                        break;
+                    case "4":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
+
+            void HandleWeaponsSubMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+            1. View the list of all weapons(several options)
+            2. Adopt a new weapon into service
+            3. Remove a weapon from service
+            4. View the number of ammo in a warehouse
+            5. Return to main menu");
+
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewWeaponsList();
+                        break;
+                    case "2":
+                        Console.Clear();
+                        UserAddWeapon();
+                        break;
+                    case "3":
+                        Console.Clear();
+                        UserDeleteWeapon();
+                        break;
+                    case "4":
+                        Console.Clear();
+                        ViewAmmoNumberInStorage();
+                        break;
+                    case "5":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
         }
-
-
 
         public static void SecondLevelAccses()
         {
@@ -320,68 +360,13 @@ namespace WeaponConrolsSys
                 switch (choose)
                 {
                     case "1":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View a list of all law enforcement agencies.
-                2. Return to main menu");
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewLawEnforcementList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            ReturnToMainMenu();
-                        }
-
+                        HandleViewLawEnforcementMenu();
                         break;
                     case "2":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View the list of all officers.
-                2. Return to main menu");
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewOfficersList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            ReturnToMainMenu();
-                        }
+                        HandleViewOfficersMenu();
                         break;
                     case "3":
-                        Console.Clear();
-                        Console.WriteLine(@"
-                1. View the list of all weapons(several options)
-                2. View the number of ammo in a warehouse
-                3. Return to main menu
-                ");
-
-                        Console.WriteLine("Enter your choice:");
-                        subChoose = Console.ReadLine();
-
-                        if (subChoose == "1")
-                        {
-                            Console.Clear();
-                            ViewWeponsList();
-                        }
-                        else if (subChoose == "2")
-                        {
-                            Console.Clear();
-                            ViewAmmoNumberInStorage();
-                        }
-                        else if (subChoose == "3")
-                        {
-                            ReturnToMainMenu();
-                        }
-
+                        HandleViewWeaponsMenu();
                         break;
                     case "0":
                         Console.Clear();
@@ -392,6 +377,84 @@ namespace WeaponConrolsSys
                         break;
                 }
             } while (!validChoice);
+
+            void HandleViewLawEnforcementMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+    1. View a list of all law enforcement agencies.
+    2. Return to main menu");
+                Console.WriteLine("Enter your choice:");
+                string subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewLawEnforcementList();
+                        break;
+                    case "2":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
+
+            void HandleViewOfficersMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+    1. View the list of all officers.
+    2. Return to main menu");
+                Console.WriteLine("Enter your choice:");
+                string subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewOfficersList();
+                        break;
+                    case "2":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
+
+            void HandleViewWeaponsMenu()
+            {
+                Console.Clear();
+                Console.WriteLine(@"
+    1. View the list of all weapons(several options)
+    2. View the number of ammo in a warehouse
+    3. Return to main menu");
+
+                Console.WriteLine("Enter your choice:");
+                subChoose = Console.ReadLine();
+
+                switch (subChoose)
+                {
+                    case "1":
+                        Console.Clear();
+                        ViewWeaponsList();
+                        break;
+                    case "2":
+                        Console.Clear();
+                        ViewAmmoNumberInStorage();
+                        break;
+                    case "3":
+                        ReturnToMainMenu();
+                        break;
+                    default:
+                        validChoice = false;
+                        break;
+                }
+            }
         }
 
         public static void ThirdLevelAccses()
@@ -407,8 +470,6 @@ namespace WeaponConrolsSys
                 Your permission level is not high enough, you do not have any rights in the system
                 0. Exit
             ========================================");
-
-
 
 
             bool validChoice;
@@ -436,47 +497,43 @@ namespace WeaponConrolsSys
             while (true)
             {
                 Console.WriteLine("\nBack to action list menu? Y/N");
-                choose = Console.ReadLine();
+                string choose = Console.ReadLine()?.ToLowerInvariant();
 
-                if (choose == "y".ToLower())
+                switch (choose)
                 {
-                    Console.Clear();
-                    ZeroLevelAccses();
-                    break;
-                }
-                else if (choose == "n".ToLower())
-                {
-                    continue;
-                }
-                else
-                {
-                    Console.WriteLine("Invalid input. Please enter Y/N");
+                    case "y":
+                        Console.Clear();
+                        ZeroLevelAccses();
+                        return;
+                    case "n":
+                        continue;
+                    default:
+                        Console.WriteLine("Invalid input. Please enter Y/N");
+                        break;
                 }
             }
         }
+
         public static void ViewLawEnforcementList()
         {
             using (SqlConnection connection = DbConnector.GetConnection())
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT * FROM LawEnforcementAgencies", connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        Console.WriteLine("{0,-10} {1,-30}", "AgencyID", "AgencyName");
-                        Console.WriteLine(new string('-', 40));
+                var agencies = connection.Query("SELECT AgencyID, AgencyName FROM LawEnforcementAgencies");
 
-                        while (reader.Read())
-                        {
-                            Console.WriteLine("{0,-10} {1,-30}", reader["AgencyID"], reader["AgencyName"]);
-                        }
-                    }
+                Console.WriteLine("{0,-10} {1,-30}", "AgencyID", "AgencyName");
+                Console.WriteLine(new string('-', 40));
+
+                foreach (var agency in agencies)
+                {
+                    Console.WriteLine("{0,-10} {1,-30}", agency.AgencyID, agency.AgencyName);
                 }
             }
 
             ReturnToMainMenu();
         }
+
 
         public static void ViewOfficersList()
         {
@@ -485,16 +542,14 @@ namespace WeaponConrolsSys
                 connection.Open();
 
                 using (SqlCommand command = new SqlCommand("SELECT UserID, First_name, Last_name, AgencyID, AgencyName, AccessLevelID, RegistrationDate FROM Users", connection))
+                using (SqlDataReader reader = command.ExecuteReader())
                 {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-15} {5,-20} {6,-20}", "UserID", "First Name", "Last Name", "AgencyID", "Agency name", "AccessLevelID", "RegistrationDate");
-                        Console.WriteLine(new string('-', 115));
+                    Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-15} {5,-20} {6,-20}", "UserID", "First Name", "Last Name", "AgencyID", "Agency name", "AccessLevelID", "RegistrationDate");
+                    Console.WriteLine(new string('-', 115));
 
-                        while (reader.Read())
-                        {
-                            Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-20} {5,-15} {6,-20}", reader["UserID"], reader["First_name"], reader["Last_name"], reader["AgencyID"], reader["AgencyName"], reader["AccessLevelID"], reader["RegistrationDate"]);
-                        }
+                    while (reader.Read())
+                    {
+                        Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-20} {5,-15} {6,-20}", reader["UserID"], reader["First_name"], reader["Last_name"], reader["AgencyID"], reader["AgencyName"], reader["AccessLevelID"], reader["RegistrationDate"]);
                     }
                 }
             }
@@ -502,82 +557,83 @@ namespace WeaponConrolsSys
             ReturnToMainMenu();
         }
 
-        public static void ViewWeponsList()
+        private static void ViewWeaponsList()
         {
             Console.WriteLine(@"
-                1.View the weapons in service
-                2.View weapons in a particular law enforcement agency");
+        1. View the weapons in service
+        2. View weapons in a particular law enforcement agency");
             Console.WriteLine("Enter your choice:");
-            choose = Console.ReadLine();
-            switch (choose)
+            string choice = Console.ReadLine();
+
+            switch (choice)
             {
                 case "1":
-
-                    Console.Clear();
-                    using (SqlConnection connection = DbConnector.GetConnection())
-                    {
-                        connection.Open();
-
-                        using (SqlCommand command = new SqlCommand("SELECT * FROM GeneralWeapons", connection))
-                        {
-                            using (SqlDataReader reader = command.ExecuteReader())
-                            {
-                                Console.WriteLine("{0,-10} {1,-20} {2,-10}", "WeaponID", "Weapon name", "Caliber");
-                                Console.WriteLine(new string('-', 40));
-
-                                while (reader.Read())
-                                {
-                                    Console.WriteLine("{0,-10} {1,-20} {2,-10}", reader["WeaponID"], reader["WeaponName"], reader["Caliber"]);
-                                }
-
-                                reader.Close();
-                            }
-                        }
-                    }
+                    ViewGeneralWeapons();
                     break;
                 case "2":
-
-                    Console.Clear();
-                    Console.WriteLine("Enter Agency ID:");
-                    int agencyID = Convert.ToInt32(Console.ReadLine());
-
-                    using (SqlConnection connection = DbConnector.GetConnection())
-                    {
-                        connection.Open();
-
-                        using (SqlCommand command = new SqlCommand("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'Weapons_Agency%'", connection))
-
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                string tableName = reader.GetString(0);
-                                string query = $"SELECT * FROM {tableName} WHERE AgencyID = @AgencyID";
-
-                                using (SqlConnection innerConnection = DbConnector.GetConnection())
-                                {
-                                    innerConnection.Open();
-                                    using (SqlCommand innerCommand = new SqlCommand(query, innerConnection))
-                                    {
-                                        innerCommand.Parameters.AddWithValue("@AgencyID", agencyID);
-                                        using (SqlDataReader innerReader = innerCommand.ExecuteReader())
-                                        {
-                                            while (innerReader.Read())
-                                            {
-                                                Console.WriteLine($"Weapon name: {innerReader["WeaponName"]}, Ammunition count: {innerReader["AmmunitionAmount"]}");
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    ViewWeaponsByAgency();
                     break;
                 default:
+                    Console.WriteLine("Invalid choice");
                     break;
             }
 
             ReturnToMainMenu();
+        }
+
+        private static void ViewGeneralWeapons()
+        {
+            Console.Clear();
+            using (SqlConnection connection = DbConnector.GetConnection())
+            {
+                connection.Open();
+                var weapons = connection.Query("SELECT * FROM GeneralWeapons");
+
+                Console.WriteLine("{0,-10} {1,-20} {2,-10}", "WeaponID", "Weapon name", "Caliber");
+                Console.WriteLine(new string('-', 40));
+
+                foreach (var weapon in weapons)
+                {
+                    Console.WriteLine("{0,-10} {1,-20} {2,-10}", weapon.WeaponID, weapon.WeaponName, weapon.Caliber);
+                }
+            }
+        }
+
+        private static void ViewWeaponsByAgency()
+        {
+            Console.Clear();
+            Console.WriteLine("Enter Agency ID:");
+            if (!int.TryParse(Console.ReadLine(), out int agencyID))
+            {
+                Console.WriteLine("Invalid Agency ID");
+                return;
+            }
+
+            using (SqlConnection connection = DbConnector.GetConnection())
+            {
+                connection.Open();
+
+                var agencies = connection.Query($"SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME LIKE 'Weapons_Agency%'");
+
+                foreach (var agency in agencies)
+                {
+                    string tableName = agency.TABLE_NAME;
+                    string query = $"SELECT * FROM {tableName} WHERE AgencyID = @AgencyID";
+
+                    using (var command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.AddWithValue("@AgencyID", agencyID);
+
+                        using (var reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                Console.WriteLine($"Weapon name: {reader["WeaponName"]}, Ammunition count: {reader["AmmunitionAmount"]}");
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static void AddLawEnforcementAgency()
@@ -624,42 +680,53 @@ namespace WeaponConrolsSys
                     command.ExecuteNonQuery();
                 }
             }
+
+            ReturnToMainMenu();
         }
 
         public static void DeleteAgencyAndUsers()
         {
             Console.WriteLine("Enter agency ID:");
-            string? agencyID = Console.ReadLine();
+            if (!int.TryParse(Console.ReadLine(), out int agencyID))
+            {
+                Console.WriteLine("Invalid agency ID.");
+                return;
+            }
 
             using (SqlConnection connection = DbConnector.GetConnection())
             {
-
                 connection.Open();
-                SqlTransaction sqlTran = connection.BeginTransaction();
 
-                using (SqlCommand command = new SqlCommand("", connection, sqlTran))
+                using (SqlTransaction sqlTran = connection.BeginTransaction())
                 {
-
-                    command.CommandText =
-                    "SELECT AgencyName FROM LawEnforcementAgencies WHERE AgencyID = @AgencyID";
-                    command.Parameters.Add(new SqlParameter("@AgencyID", agencyID));
-                    string agencyName = (string)command.ExecuteScalar();
-
-                    command.CommandText =
-                   "DELETE FROM Users WHERE AgencyID = @AgencyID";
-                    command.ExecuteNonQuery();
-
-                    command.CommandText =
-                    $"DROP TABLE Weapons_Agency{agencyName}";
-                    command.ExecuteNonQuery();
-
-                    command.CommandText =
-                    "DELETE FROM LawEnforcementAgencies WHERE AgencyID = @AgencyID";
-                    command.ExecuteNonQuery();
-
+                    string? agencyName = connection.QueryFirstOrDefault<string>(
+                        "SELECT AgencyName FROM LawEnforcementAgencies WHERE AgencyID = @AgencyID",
+                        new { AgencyID = agencyID },
+                        transaction: sqlTran
+                    );
+                    if (string.IsNullOrEmpty(agencyName))
+                    {
+                        Console.WriteLine("Agency not found.");
+                        return;
+                    }
+                    connection.Execute(
+                        "DELETE FROM Users WHERE AgencyID = @AgencyID",
+                        new { AgencyID = agencyID },
+                        transaction: sqlTran
+                    );
+                    connection.Execute(
+                        $"DROP TABLE Weapons_Agency{agencyName}",
+                        transaction: sqlTran
+                    );
+                    connection.Execute(
+                        "DELETE FROM LawEnforcementAgencies WHERE AgencyID = @AgencyID",
+                        new { AgencyID = agencyID },
+                        transaction: sqlTran
+                    );
                     sqlTran.Commit();
                 }
             }
+
             ReturnToMainMenu();
         }
 
@@ -694,17 +761,22 @@ namespace WeaponConrolsSys
         public static void DeleteUser()
         {
             Console.WriteLine("Enter User ID:");
-            string? userID = Console.ReadLine();
+            if (!int.TryParse(Console.ReadLine(), out int userID))
+            {
+                Console.WriteLine("Invalid User ID.");
+                return;
+            }
 
             using (SqlConnection connection = DbConnector.GetConnection())
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("DELETE FROM Users WHERE UserID = @UserId", connection))
-                {
-                    command.Parameters.AddWithValue("@UserId", userID);
+                int rowsAffected = connection.Execute("DELETE FROM Users WHERE UserID = @UserID", new { UserID = userID });
 
-                    command.ExecuteNonQuery();
+                if (rowsAffected == 0)
+                {
+                    Console.WriteLine("User not found.");
+                    return;
                 }
             }
 
@@ -724,7 +796,6 @@ namespace WeaponConrolsSys
 
             ReturnToMainMenu();
         }
-
 
         public static void UserDeleteWeapon()
         {
@@ -755,7 +826,6 @@ namespace WeaponConrolsSys
 
             ReturnToMainMenu();
         }
-
 
         public static void UserDeleteWeaponFromAgency()
         {
@@ -808,21 +878,16 @@ namespace WeaponConrolsSys
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT * FROM AmmunitionStorage", connection))
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        Console.WriteLine("{0,-10}", "AmmunitionAmount");
-                        Console.WriteLine(new string('-', 20));
+                var ammoAmounts = connection.Query<int>("SELECT AmmunitionAmount FROM AmmunitionStorage");
 
-                        while (reader.Read())
-                        {
-                            Console.WriteLine("{0,-10}", reader["AmmunitionAmount"]);
-                        }
-                    }
+                Console.WriteLine("{0,-10}", "AmmunitionAmount");
+                Console.WriteLine(new string('-', 20));
+
+                foreach (var amount in ammoAmounts)
+                {
+                    Console.WriteLine("{0,-10}", amount);
                 }
             }
-
             ReturnToMainMenu();
         }
     }

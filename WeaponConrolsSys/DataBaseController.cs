@@ -1,6 +1,6 @@
 ﻿using System.Data.SqlClient;
 
-namespace WeaponConrolsSys
+namespace WeaponControlsSys
 {
     class DbController
     {

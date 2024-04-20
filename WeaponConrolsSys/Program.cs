@@ -1,4 +1,4 @@
-﻿namespace WeaponConrolsSys
+﻿namespace WeaponControlsSys
 {
     public class AccessControlService
     {
@@ -20,19 +20,7 @@
                 return false;
             }
 
-            switch (user.AgencyID)
-            {
-                case 0:
-                    return HandleAccessLevel(user.AccessLevelID);
-                case 1:
-                    return HandleAccessLevel(user.AccessLevelID);
-                case 2:
-                    return HandleAccessLevel(user.AccessLevelID);
-                case 3:
-                    return HandleAccessLevel(user.AccessLevelID);
-                default:
-                    return false;
-            }
+            return HandleAccessLevel(user.AccessLevelID);
         }
 
         private bool HandleAccessLevel(int accessLevelID)
@@ -56,7 +44,6 @@
             }
         }
     }
-
 
     public class Program
     {
