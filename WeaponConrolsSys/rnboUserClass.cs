@@ -114,7 +114,8 @@ namespace WeaponConrolsSys
                 4. Add a new type of weapon for a law enforcement agency
                 5. Remove a certain type of weapon from a law enforcement agency
                 6. Restore ammunition to a certain security agency
-                7. Return to main menu");
+                7. View the number of ammo in a warehouse
+                8. Return to main menu");
 
                         Console.WriteLine("Enter your choice:");
                         subChoose = Console.ReadLine();
@@ -147,10 +148,16 @@ namespace WeaponConrolsSys
                         }
                         else if (subChoose == "6")
                         {
-
+                            Console.Clear();
+                            UserAddAmmunition();
+                        }
+                        else if (subChoose == "7")
+                        {
+                            Console.Clear();
+                            ViewAmmoNumberInStorage();
                         }
 
-                        else if (subChoose == "7")
+                        else if (subChoose == "8")
                         {
                             ReturnToMainMenu();
                         }
@@ -247,7 +254,8 @@ namespace WeaponConrolsSys
                 1. View the list of all weapons(several options)
                 2. Adopt a new weapon into service
                 3. Remove a weapon from service
-                4. Return to main menu");
+                4. View the number of ammo in a warehouse
+                5. Return to main menu");
 
                         Console.WriteLine("Enter your choice:");
                         subChoose = Console.ReadLine();
@@ -262,8 +270,12 @@ namespace WeaponConrolsSys
                             Console.Clear();
                             UserAddWeapon();
                         }
-                        
                         else if (subChoose == "4")
+                        {
+                            Console.Clear();
+                            ViewAmmoNumberInStorage();
+                        }
+                        else if (subChoose == "5")
                         {
                             ReturnToMainMenu();
                         }
@@ -348,7 +360,9 @@ namespace WeaponConrolsSys
                         Console.Clear();
                         Console.WriteLine(@"
                 1. View the list of all weapons(several options)
-                2. Return to main menu");
+                2. View the number of ammo in a warehouse
+                3. Return to main menu
+                ");
 
                         Console.WriteLine("Enter your choice:");
                         subChoose = Console.ReadLine();
@@ -359,6 +373,11 @@ namespace WeaponConrolsSys
                             ViewWeponsList();
                         }
                         else if (subChoose == "2")
+                        {
+                            Console.Clear();
+                            ViewAmmoNumberInStorage();
+                        }
+                        else if (subChoose == "3")
                         {
                             ReturnToMainMenu();
                         }
@@ -465,16 +484,16 @@ namespace WeaponConrolsSys
             {
                 connection.Open();
 
-                using (SqlCommand command = new SqlCommand("SELECT UserID, First_name, Last_name, AgencyID, AgencyName, AccessLevelID FROM Users", connection))
+                using (SqlCommand command = new SqlCommand("SELECT UserID, First_name, Last_name, AgencyID, AgencyName, AccessLevelID, RegistrationDate FROM Users", connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-30} {5,-15}", "UserID", "First Name", "Last Name", "AgencyID", "Agency name", "AccessLevelID");
-                        Console.WriteLine(new string('-', 95));
+                        Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-15} {5,-20} {6,-20}", "UserID", "First Name", "Last Name", "AgencyID", "Agency name", "AccessLevelID", "RegistrationDate");
+                        Console.WriteLine(new string('-', 115));
 
                         while (reader.Read())
                         {
-                            Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-30} {5,-15}", reader["UserID"], reader["First_name"], reader["Last_name"], reader["AgencyID"], reader["AgencyName"], reader["AccessLevelID"]);
+                            Console.WriteLine("{0,-10} {1,-15} {2,-15} {3,-10} {4,-20} {5,-15} {6,-20}", reader["UserID"], reader["First_name"], reader["Last_name"], reader["AgencyID"], reader["AgencyName"], reader["AccessLevelID"], reader["RegistrationDate"]);
                         }
                     }
                 }
@@ -563,7 +582,7 @@ namespace WeaponConrolsSys
 
         public static void AddLawEnforcementAgency()
         {
-            Console.WriteLine("Enter agency name:");
+            Console.WriteLine("Enter Agency Name:");
             string? agencyName = Console.ReadLine();
             using (SqlConnection connection = DbConnector.GetConnection())
             {
@@ -674,7 +693,7 @@ namespace WeaponConrolsSys
 
         public static void DeleteUser()
         {
-            Console.WriteLine("Enter user ID:");
+            Console.WriteLine("Enter User ID:");
             string? userID = Console.ReadLine();
 
             using (SqlConnection connection = DbConnector.GetConnection())
@@ -760,6 +779,49 @@ namespace WeaponConrolsSys
             int userID = Convert.ToInt32(Console.ReadLine());
 
             User.UpdateUser(userID);
+
+            ReturnToMainMenu();
+        }
+
+        public static void UserAddAmmunition()
+        {
+            Console.WriteLine("Enter Agency Name:");
+            string agencyName = Console.ReadLine();
+
+            Console.WriteLine("Enter Agency ID:");
+            int agencyId = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("Enter Weapon Mame:");
+            string weaponName = Console.ReadLine();
+
+            Console.WriteLine("Enter ammunition count:");
+            int ammunition = int.Parse(Console.ReadLine());
+
+            Weapon.AddAmmunition(agencyName, agencyId, weaponName, ammunition);
+
+            ReturnToMainMenu();
+        }
+
+        public static void ViewAmmoNumberInStorage()
+        {
+            using (SqlConnection connection = DbConnector.GetConnection())
+            {
+                connection.Open();
+
+                using (SqlCommand command = new SqlCommand("SELECT * FROM AmmunitionStorage", connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        Console.WriteLine("{0,-10}", "AmmunitionAmount");
+                        Console.WriteLine(new string('-', 20));
+
+                        while (reader.Read())
+                        {
+                            Console.WriteLine("{0,-10}", reader["AmmunitionAmount"]);
+                        }
+                    }
+                }
+            }
 
             ReturnToMainMenu();
         }

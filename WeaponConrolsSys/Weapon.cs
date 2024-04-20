@@ -73,4 +73,79 @@ public class Weapon
             }
         }
     }
+
+    public static void AddAmmunition(string agencyName, int agencyId, string weaponName, int ammunitionAmount)
+    {
+        string agencyTableName = "Weapons_Agency" + agencyName;
+
+        int currentAmmunition = GetCurrentAmmunition(agencyTableName, agencyId, weaponName);
+
+        SubtractAmmunition(ammunitionAmount);
+        AddAmmunitionToAgency(agencyTableName, agencyId, weaponName, ammunitionAmount);
+
+        int newAmmunition = GetCurrentAmmunition(agencyTableName, agencyId, weaponName);
+
+        Console.WriteLine($@"
+        --------------------------------------------------      
+        Weapon: {weaponName}
+        --------------------------------------------------
+        Ammunition before: {currentAmmunition}
+        Ammunition after: {newAmmunition}
+        --------------------------------------------------");
+    }
+
+    public static int GetCurrentAmmunition(string agencyTableName, int agencyId, string weaponName)
+    {
+        using (SqlConnection connection = DbConnector.GetConnection())
+        {
+            connection.Open();
+
+            string getCurrentSql = $"SELECT AmmunitionAmount FROM {agencyTableName} WHERE AgencyID = @agencyId AND WeaponName = @weaponName";
+            using (SqlCommand command = new SqlCommand(getCurrentSql, connection))
+            {
+                command.Parameters.AddWithValue("@agencyId", agencyId);
+                command.Parameters.AddWithValue("@weaponName", weaponName);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        return reader.GetInt32(0);
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    public static void SubtractAmmunition(int ammunitionAmount)
+    {
+        using (SqlConnection connection = DbConnector.GetConnection())
+        {
+            connection.Open();
+
+            string subtractSql = "UPDATE AmmunitionStorage SET AmmunitionAmount = AmmunitionAmount - @ammunitionAmount WHERE AmmunitionAmount >= @ammunitionAmount";
+            using (SqlCommand command = new SqlCommand(subtractSql, connection))
+            {
+                command.Parameters.AddWithValue("@ammunitionAmount", ammunitionAmount);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
+
+    public static void AddAmmunitionToAgency(string agencyTableName, int agencyId, string weaponName, int ammunitionAmount)
+    {
+        using (SqlConnection connection = DbConnector.GetConnection())
+        {
+            connection.Open();
+
+            string addSql = $"UPDATE {agencyTableName} SET AmmunitionAmount = AmmunitionAmount + @ammunitionAmount WHERE AgencyID = @agencyId AND WeaponName = @weaponName";
+            using (SqlCommand command = new SqlCommand(addSql, connection))
+            {
+                command.Parameters.AddWithValue("@ammunitionAmount", ammunitionAmount);
+                command.Parameters.AddWithValue("@agencyId", agencyId);
+                command.Parameters.AddWithValue("@weaponName", weaponName);
+                command.ExecuteNonQuery();
+            }
+        }
+    }
 }
