@@ -56,10 +56,8 @@ public class Weapon
         string agencyTableName = "Weapons_Agency" + agencyName;
 
         int currentAmmunition = GetCurrentAmmunition(agencyTableName, agencyId, weaponName);
-
         SubtractAmmunition(ammunitionAmount);
         AddAmmunitionToAgency(agencyTableName, agencyId, weaponName, ammunitionAmount);
-
         int newAmmunition = GetCurrentAmmunition(agencyTableName, agencyId, weaponName);
 
         Console.WriteLine($@"

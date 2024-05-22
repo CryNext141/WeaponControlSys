@@ -57,7 +57,7 @@
 
         public static void UserLogin()
         {
-            Console.WriteLine("Welcome to WeaponControlSys\n");
+            Console.WriteLine("\tWelcome to WeaponControlSys\n");
 
             UserService userService = new UserService();
             AccessControlService accessControlService = new AccessControlService();
@@ -65,10 +65,10 @@
             bool loginSuccessful;
             do
             {
-                Console.WriteLine("Enter username:");
+                Console.WriteLine("\tEnter username:");
                 loginUsername = Console.ReadLine();
 
-                Console.WriteLine("Enter password:");
+                Console.WriteLine("\tEnter password:");
                 loginPassword = Console.ReadLine();
 
                 loginSuccessful = userService.LoginUser(loginUsername, loginPassword);

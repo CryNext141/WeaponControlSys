@@ -14,6 +14,7 @@ namespace WeaponControlsSys
         static UserService userService = new UserService();
 
         public static void ZeroLevelAccses()
+            //testComment
         {
             user = userService.GetUserFromDatabase(Program.loginUsername);
 

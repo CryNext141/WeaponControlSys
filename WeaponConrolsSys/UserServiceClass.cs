@@ -60,7 +60,6 @@ namespace WeaponControlsSys
             {
                 return false;
             }
-
             return BCrypt.Net.BCrypt.Verify(password, user.Password);
         }
 
