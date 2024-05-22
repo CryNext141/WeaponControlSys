@@ -24,6 +24,7 @@ namespace WeaponControlsSys
             Console.Write(user.First_name + " " + user.Last_name);
             Console.ResetColor();
             Console.WriteLine($"! From {user.AgencyName.ToUpper()} with access level {user.AccessLevelID}");
+            Console.WriteLine("Yo");
 
             Console.WriteLine(@"
         ========================================
